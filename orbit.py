@@ -16,20 +16,36 @@ canvas = tkinter.Canvas(root,
 canvas.pack()
 
 π = 3.1415926535
-grav_const = 0.02478287949
+#grav_const = 0.02478287949
+grav_const = 6
 
 zoom = 1
 
 helv36 = tkFont.Font(family='Apple Symbols', size=36)
 
-timetext = canvas.create_text(10, 0, anchor = tkinter.NW, fill = "black", text = "Days: 0", font = helv36)
+timetext = canvas.create_text(10,
+                              0,
+                              anchor = tkinter.NW,
+                              fill = "black",
+                              text = "Days: 0",
+                              font = helv36)
 time = 0
 
-# Format of the planet data: [id, x velocity, y velocity, x position, y position, mass, stationary, size]
+# Format of the planet data:
+#[id, x velocity, y velocity, x position, y position, mass, stationary, size]
 objects = []  # A list of planets.
 
 
-def createPlanet(x_position, y_position, x_velocity, y_velocity, mass, color, stationary, size):
+def createPlanet(
+    x_position,
+    y_position,
+    x_velocity,
+    y_velocity,
+    mass,
+    color,
+    stationary,
+    size
+):
   global zoom
 
   id = canvas.create_oval((x_position - 600) / zoom + 600 + size,
@@ -43,7 +59,13 @@ def createPlanet(x_position, y_position, x_velocity, y_velocity, mass, color, st
 
 arrow_ids = []
 def drawArrow(x0, y0, x_to, y_to, arrow_color):
-  temporary_id = canvas.create_line(x0, y0, x0 + x_to, y0 + y_to, fill = str(arrow_color), arrow = tkinter.LAST, width = 3)
+  temporary_id = canvas.create_line(x0,
+                                    y0,
+                                    x0 + x_to,
+                                    y0 + y_to,
+                                    fill = str(arrow_color),
+                                    arrow = tkinter.LAST,
+                                    width = 3)
   arrow_ids.append(temporary_id)
 
 
@@ -56,13 +78,17 @@ createPlanet(900, 450, 0, 5.184, 1, "blue", 0, 5)
 createPlanet(1050, 450, 0, 4.161024, 0.107, "red", 0, 2)
 createPlanet(2160, 450, 0, 2.256768, 317.83, "beige", 0, 11)
 
-# Debugging code to create a lot of planets inside a circle of radius 500
+# For debugging code (It creates a lot of planets inside a circle of radius 500)
 #
 # amount = 100
 # for create in range(amount):
 #   angle = random.uniform(-π, π)
 #   radius = random.randint(-500, 500)
-#   createPlanet(math.cos(angle) * radius + 600, math.sin(angle) * radius + 450, math.sin(angle) * radius / 100, math.cos(angle) * radius / 100, 10, "gray", 0, 5)
+#   createPlanet(math.cos(angle) * radius + 600,
+#                math.sin(angle) * radius + 450,
+#                math.sin(angle) * radius / -100,
+#                math.cos(angle) * radius / 100,
+#                10, "gray", 0, 5)
 
 
 def UpdateUniverse():
@@ -76,7 +102,7 @@ def UpdateUniverse():
     canvas.delete(id)
 
   for target in range(len(objects)):
-    # Makes sure it isn't a a stationary object
+    # Makes sure it isn't a stationary object
     if objects[target][6] == 0:
       # Collects data for accelearation arrows
       total_accel_x = 0
@@ -84,15 +110,24 @@ def UpdateUniverse():
 
       for others in range(len(objects)):
 
-        distance_squared = (objects[others][3] - objects[target][3]) ** 2 + (objects[others][4] - objects[target][4]) ** 2
+        distance_squared = (
+          objects[others][3] - objects[target][3]) ** 2 + (
+          objects[others][4] - objects[target][4]) ** 2
 
         # Gravitational acceleration
         if distance_squared != 0:
-          # F_g = G * m1 * m2 / d^2, but we want the acceleration, so we can divide both sides by m1 (if m1 is the object's mass).
-          # Because F = ma
+          # F_g = G * m1 * m2 / d^2, but we want the acceleration,
+          # so we can divide both sides by m1 (if m1 is the object's mass)
+          # because F = ma.
           accel_both = grav_const * objects[others][5] / distance_squared
-          accel_x = accel_both * (objects[others][3] - objects[target][3]) / math.sqrt(distance_squared)
-          accel_y = accel_both * (objects[others][4] - objects[target][4]) / math.sqrt(distance_squared)
+          accel_x = (
+            accel_both * (objects[others][3] - objects[target][3]) /
+            math.sqrt(distance_squared)
+          )
+          accel_y = (
+            accel_both * (objects[others][4] - objects[target][4]) /
+            math.sqrt(distance_squared)
+          )
 
           # Add acceleration to velocity
           objects[target][1] += accel_x
@@ -101,13 +136,16 @@ def UpdateUniverse():
           total_accel_x += accel_x
           total_accel_y += accel_y
 
-      # Add acceleration arrow & velocity arrow for debugging
+      # Draws acceleration arrow & velocity arrow for debugging
+      #
       # drawArrow((objects[target][3] + objects[target][1] - 600) / zoom + 600,
       #           (objects[target][4]  + objects[target][2] - 450) / zoom + 450,
-      #           total_accel_x * 1000,
-      #           total_accel_y * 1000,
-      #           "blue")
-      # drawArrow(objects[target][3] + objects[target][1], objects[target][4]  + objects[target][2], objects[target][1], objects[target][2] "red")
+      #            total_accel_x * 1000,
+      #            total_accel_y * 1000,
+      #            "blue")
+      # drawArrow(objects[target][3] + objects[target][1],
+      #           objects[target][4] + objects[target][2],
+      #           objects[target][1], objects[target][2], "red")
 
   # Update positions after all distances are calculated
   for target_2 in range(len(objects)):
@@ -118,7 +156,9 @@ def UpdateUniverse():
       objects[target_2][4] += objects[target_2][2]
 
       # Change the object's position (first argument is the id)
-      canvas.moveto(objects[target_2][0], (objects[target_2][3] - 600) / zoom + 600, (objects[target_2][4] - 450) / zoom + 450)
+      canvas.moveto(objects[target_2][0],
+                    (objects[target_2][3] - 600) / zoom + 600,
+                    (objects[target_2][4] - 450) / zoom + 450)
 
   time += 1
   canvas.itemconfig(timetext, text = "Days: " + str(time))
