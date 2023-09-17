@@ -19,7 +19,7 @@ canvas.pack()
 #grav_const = 0.02478287949
 grav_const = 6
 
-zoom = 1
+zoom = 6
 
 helv36 = tkFont.Font(family='Apple Symbols', size=36)
 
@@ -71,12 +71,42 @@ def drawArrow(x0, y0, x_to, y_to, arrow_color):
 
 # This is the setup that creates the solar system (up to jupiter).
 # You can change the setup here.
-createPlanet(600, 450, 0, 0, 333000, "yellow", 1, 13)
-createPlanet(720, 450, 0, 8.1216, 0.0553, "gray", 0, 1)
-createPlanet(810, 450, 0, -6.051456, 0.815, "orange", 0, 4)
-createPlanet(900, 450, 0, 5.184, 1, "blue", 0, 5)
-createPlanet(1050, 450, 0, 4.161024, 0.107, "red", 0, 2)
-createPlanet(2160, 450, 0, 2.256768, 317.83, "beige", 0, 11)
+# createPlanet(600, 450, 0, 0, 333000, "yellow", 1, 13)
+# createPlanet(720, 450, 0, 8.1216, 0.0553, "gray", 0, 1)
+# createPlanet(810, 450, 0, -6.051456, 0.815, "orange", 0, 4)
+# createPlanet(900, 450, 0, 5.184, 1, "blue", 0, 5)
+# createPlanet(1050, 450, 0, 4.161024, 0.107, "red", 0, 2)
+# createPlanet(2160, 450, 0, 2.256768, 317.83, "beige", 0, 11)
+
+# Random three-body system:
+def threeBody():
+  total_m_x = 0
+  total_m_y = 0
+  # first two planets
+  for create in range(2):
+    size = random.random() * 30
+    x_v = (random.random() - 0.5) * 6
+    y_v = (random.random() - 0.5) * 6
+    createPlanet(random.random() * WIDTH,
+                 random.random() * HEIGHT,
+                 x_v,
+                 y_v,
+                 size ** 2,
+                 "gray",
+                 0,
+                 size / zoom)
+    total_m_x += size ** 2 * x_v
+    total_m_y += size ** 2 * y_v
+  # last planet like this, so the average momentum is 0
+  size = random.random() * 30
+  createPlanet(random.random() * WIDTH,
+               random.random() * HEIGHT,
+               -total_m_x / size ** 2,
+               -total_m_x / size ** 2,
+               size ** 2,
+               "gray",
+               0,
+               size / zoom)
 
 # For debugging code (It creates a lot of planets inside a circle of radius 500)
 #
@@ -90,6 +120,16 @@ createPlanet(2160, 450, 0, 2.256768, 317.83, "beige", 0, 11)
 #                math.cos(angle) * radius / 100,
 #                10, "gray", 0, 5)
 
+def restart(event):
+  global objects
+  global time
+
+  time = 0
+  for del_id in objects:
+    canvas.delete(del_id[0])
+  objects = []
+
+  threeBody()
 
 def UpdateUniverse():
   global grav_const
@@ -167,10 +207,11 @@ def UpdateUniverse():
 
 canvas.focus_set()
 
-# This stuff is for UI. Not used right now.
+# This stuff is for UI.
 # canvas.bind('<ButtonPress-1>', pressed)
 # canvas.bind('<Motion>', tracker)
 # canvas.bind('<ButtonRelease-1>', newObject)
+canvas.bind('a', restart)
 
 # Update every 50ms.
 root.after(50, UpdateUniverse)
